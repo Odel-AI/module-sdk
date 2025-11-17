@@ -1,0 +1,20 @@
+{
+  "name": "hello-world-module",
+  "version": "1.0.0",
+  "description": "Simple hello world module using @odel/module-sdk",
+  "main": "src/index.ts",
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@odel/module-sdk": "workspace:*",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@cloudflare/vitest-pool-workers": "^0.5.26",
+    "@cloudflare/workers-types": "^4.20250110.0",
+    "typescript": "^5.9.2",
+    "vitest": "^2.1.8"
+  }
+}

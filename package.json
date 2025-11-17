@@ -1,0 +1,60 @@
+{
+  "name": "@odel/module-sdk",
+  "version": "0.0.1",
+  "description": "SDK for building Odel modules - MCP protocol over HTTP for Cloudflare Workers",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./testing": {
+      "types": "./dist/testing/index.d.ts",
+      "default": "./dist/testing/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "prepublishOnly": "pnpm build && pnpm test",
+    "clean": "rm -rf dist"
+  },
+  "keywords": [
+    "odel",
+    "mcp",
+    "model-context-protocol",
+    "module",
+    "sdk",
+    "cloudflare-workers",
+    "typescript"
+  ],
+  "author": "Odel",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/odel-ai/module-sdk.git"
+  },
+  "bugs": {
+    "url": "https://github.com/odel-ai/module-sdk/issues"
+  },
+  "homepage": "https://github.com/odel-ai/module-sdk#readme",
+  "dependencies": {
+    "zod": "^3.25.76",
+    "zod-to-json-schema": "^3.24.6"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20250110.0",
+    "typescript": "^5.9.2",
+    "vitest": "~3.2.0"
+  },
+  "peerDependencies": {
+    "@cloudflare/workers-types": "^4.x"
+  }
+}

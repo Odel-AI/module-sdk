@@ -1,0 +1,45 @@
+# Source files
+src/
+*.ts
+!*.d.ts
+
+# Development files
+tsconfig.json
+vitest.config.ts
+.dev.vars
+.dev.vars.example
+
+# Test files
+**/*.test.ts
+**/*.test.js
+**/*.spec.ts
+**/*.spec.js
+__tests__/
+
+# Build artifacts
+node_modules/
+.turbo/
+.wrangler/
+
+# Documentation (keep README.md)
+docs/
+examples/
+IMPLEMENTATION_PLAN.md
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+
+# CI/CD
+.github/
