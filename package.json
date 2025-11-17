@@ -1,6 +1,6 @@
 {
   "name": "@odel/module-sdk",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "SDK for building Odel modules - MCP protocol over HTTP for Cloudflare Workers",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
