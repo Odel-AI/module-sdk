@@ -272,29 +272,6 @@ export default createModule<Env>()
   .build();
 ```
 
-## Development
-
-```bash
-# Build the SDK
-pnpm build
-
-# Run tests
-pnpm test
-
-# Watch mode
-pnpm test:watch
-```
-
-## Publishing
-
-```bash
-# Build and test before publishing
-pnpm prepublishOnly
-
-# Publish to npm
-npm publish
-```
-
 ## License
 
 MIT
