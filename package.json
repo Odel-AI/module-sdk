@@ -1,6 +1,6 @@
 {
   "name": "@odel/module-sdk",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "SDK for building Odel modules - MCP protocol over HTTP for Cloudflare Workers",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -21,9 +21,9 @@
   ],
   "scripts": {
     "build": "tsc",
-    "test": "vitest run",
-    "test:watch": "vitest",
-    "prepublishOnly": "pnpm build && pnpm test",
+    "test": "cd examples/hello-world && pnpm test",
+    "test:watch": "cd examples/hello-world && pnpm test:watch",
+    "prepublishOnly": "pnpm build",
     "clean": "rm -rf dist"
   },
   "keywords": [
@@ -55,6 +55,20 @@
     "vitest": "~3.2.0"
   },
   "peerDependencies": {
-    "@cloudflare/workers-types": "^4.x"
+    "@cloudflare/workers-types": "^4.x",
+    "@cloudflare/vitest-pool-workers": "^0.5.0 || ^0.10.0",
+    "vitest": "^2.0.0 || ^3.0.0",
+    "typescript": "^5.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@cloudflare/vitest-pool-workers": {
+      "optional": true
+    },
+    "vitest": {
+      "optional": true
+    },
+    "typescript": {
+      "optional": true
+    }
   }
 }

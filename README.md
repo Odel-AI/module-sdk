@@ -16,7 +16,99 @@ yarn add @odel/module-sdk zod
 
 ## Quick Start
 
-Create a simple calculator module:
+### 1. Install Dependencies
+
+```bash
+npm install @odel/module-sdk zod
+npm install -D wrangler
+```
+
+The SDK has peer dependencies that will be automatically suggested by your package manager:
+- `@cloudflare/workers-types` - Type definitions for Cloudflare Workers
+- `@cloudflare/vitest-pool-workers` - Vitest pool for testing Workers
+- `vitest` - Test framework
+- `typescript` - TypeScript compiler
+
+Install them with:
+```bash
+npm install -D @cloudflare/workers-types @cloudflare/vitest-pool-workers typescript vitest
+```
+
+### 2. Configure TypeScript
+
+Create `tsconfig.json`:
+
+```json
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ES2022",
+    "lib": ["ES2022"],
+    "moduleResolution": "bundler",
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "declaration": true,
+    "types": ["@cloudflare/workers-types", "vitest/globals"]
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist"]
+}
+```
+
+### 3. Configure Vitest
+
+Create `vitest.config.ts`:
+
+```typescript
+import { defineWorkersConfig } from '@cloudflare/vitest-pool-workers/config';
+
+export default defineWorkersConfig({
+  test: {
+    globals: true,
+    poolOptions: {
+      workers: {
+        wrangler: { configPath: './wrangler.toml' }
+      }
+    }
+  }
+});
+```
+
+### 4. Configure Wrangler
+
+Create `wrangler.toml`:
+
+```toml
+name = "my-module"
+main = "src/index.ts"
+compatibility_date = "2025-01-17"
+compatibility_flags = ["nodejs_compat"]
+
+[observability]
+enabled = true
+```
+
+### 5. Add Type Declaration for Tests
+
+Create `src/cloudflare-test.d.ts`:
+
+```typescript
+declare module 'cloudflare:test' {
+  import type { ExecutionContext } from '@cloudflare/workers-types';
+  export function createExecutionContext(): ExecutionContext;
+  export function waitOnExecutionContext(ctx: ExecutionContext): Promise<void>;
+  export const env: any;
+}
+```
+
+> **Note:** This file provides TypeScript types for the `cloudflare:test` module, which is only available during testing with `@cloudflare/vitest-pool-workers`.
+
+### 6. Create Your Module
+
+Create `src/index.ts`:
 
 ```typescript
 import { createModule, SuccessResponseSchema } from '@odel/module-sdk';
@@ -35,7 +127,7 @@ export default createModule()
         result: z.number().describe('Sum of a and b')
       })
     ),
-    handler: async (input, context) => {
+    handler: async (input, _context) => {
       return {
         success: true as const,
         result: input.a + input.b
@@ -43,6 +135,51 @@ export default createModule()
     }
   })
   .build();
+```
+
+### 7. Add Tests
+
+Create `src/index.test.ts`:
+
+```typescript
+import { describe, test, expect } from 'vitest';
+import { testMCPCompliance, testTool, expectSuccess } from '@odel/module-sdk/testing';
+import { env, createExecutionContext, waitOnExecutionContext } from 'cloudflare:test';
+import worker from './index';
+
+// Test MCP protocol compliance
+testMCPCompliance(
+  () => ({ worker, env, createExecutionContext, waitOnExecutionContext }),
+  ['add'] // Expected tool names
+);
+
+describe('Calculator', () => {
+  test('add works correctly', async () => {
+    const result = await testTool(worker, 'add', { a: 2, b: 3 });
+    expectSuccess(result);
+    expect(result.result).toBe(5);
+  });
+});
+```
+
+### 8. Add Scripts to package.json
+
+```json
+{
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "deploy": "wrangler deploy",
+    "dev": "wrangler dev"
+  }
+}
+```
+
+### 9. Run Tests
+
+```bash
+npm test
 ```
 
 ## Features
