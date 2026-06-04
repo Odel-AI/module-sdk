@@ -1,2 +1,10 @@
 packages:
   - 'examples/*'
+
+# pnpm 11 defaults strictDepBuilds=true: a dependency build script NOT listed
+# here fails `pnpm install` instead of being silently skipped. esbuild backs
+# vitest; workerd/sharp come from the examples' wrangler toolchain.
+allowBuilds:
+  esbuild: true
+  sharp: true
+  workerd: true
