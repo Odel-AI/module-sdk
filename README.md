@@ -1,6 +1,12 @@
 # @odel/module-sdk
 
+[![npm version](https://img.shields.io/npm/v/@odel/module-sdk?logo=npm)](https://www.npmjs.com/package/@odel/module-sdk)
+[![provenance](https://img.shields.io/badge/npm-provenance-blue?logo=npm)](https://www.npmjs.com/package/@odel/module-sdk#provenance)
+[![license](https://img.shields.io/npm/l/@odel/module-sdk)](./LICENSE)
+
 > A thin, additive wrapper over the [Model Context Protocol TypeScript SDK](https://github.com/modelcontextprotocol/typescript-sdk) for building Odel modules on Cloudflare Workers.
+
+Every release is published from CI via npm [Trusted Publishing](https://docs.npmjs.com/trusted-publishers) (OIDC) with signed [provenance](https://docs.npmjs.com/generating-provenance-statements) — no long-lived tokens.
 
 The official MCP SDK owns the protocol. This package adds only Odel's conventions on top: the per-request **context/secrets envelope**, typed errors, input validators, response schemas, and code-declared config. No fork, no hand-rolled protocol — just `@modelcontextprotocol/sdk` plus a handful of helpers.
 
@@ -50,7 +56,7 @@ Use **`createOdelServer`** rather than `McpServer` directly: it's a thin wrapper
 
 A fresh server + transport per request is the canonical **stateless** pattern for Workers. With `sessionIdGenerator: undefined` the transport accepts a single `tools/call` with no `initialize` handshake — which is exactly how Odel's mcp-proxy invokes modules.
 
-See [`examples/calculator-basic`](./examples/calculator-basic) for a complete, runnable module.
+See [`examples/calculator-basic`](./examples/calculator-basic) for a minimal, runnable module, or [`examples/foobar`](./examples/foobar) for an all-features reference that exercises the context envelope, declared config/secrets, typed errors, and output schemas.
 
 ## The context envelope
 
