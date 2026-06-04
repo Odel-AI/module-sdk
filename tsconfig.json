@@ -6,8 +6,6 @@
     "moduleResolution": "bundler",
     "types": ["@cloudflare/workers-types"],
 
-    "outDir": "./dist",
-    "rootDir": "./src",
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
@@ -25,11 +23,6 @@
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist", "**/*.test.ts"],
-  "ts-node": {
-    "compilerOptions": {
-      "module": "commonjs"
-    }
-  }
+  "include": ["src/**/*", "test/**/*"],
+  "exclude": ["node_modules", "dist", "examples"]
 }
