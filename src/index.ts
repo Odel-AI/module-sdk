@@ -1,43 +1,40 @@
 /**
  * @odel/module-sdk
  *
- * SDK for building Odel modules - MCP protocol over HTTP for Cloudflare Workers
+ * A thin, additive wrapper over the Model Context Protocol TypeScript SDK
+ * (`@modelcontextprotocol/sdk`) for building Odel modules on Cloudflare Workers.
+ *
+ * The official SDK owns the MCP protocol; this package adds only Odel's
+ * conventions — the per-request context/secrets envelope, typed errors,
+ * validators, response schemas, and code-declared config.
+ *
+ * - Module helpers (this root, and `@odel/module-sdk/odel`)
+ * - MCP server primitives (`@odel/module-sdk/server`)
  *
  * @example
  * ```typescript
- * import { createModule, SuccessResponseSchema } from '@odel/module-sdk';
+ * import { McpServer, WebStandardStreamableHTTPServerTransport } from '@odel/module-sdk/server';
+ * import { getModuleContext, getRequiredSecret, validators } from '@odel/module-sdk';
  * import { z } from 'zod';
  *
- * export default createModule()
- *   .tool({
- *     name: 'add',
- *     description: 'Add two numbers',
- *     inputSchema: z.object({
- *       a: z.number(),
- *       b: z.number()
- *     }),
- *     outputSchema: SuccessResponseSchema(
- *       z.object({ result: z.number() })
- *     ),
- *     handler: async (input, context) => {
- *       return { success: true as const, result: input.a + input.b };
- *     }
- *   })
- *   .build();
+ * const server = new McpServer({ name: 'my-module', version: '1.0.0' });
+ * server.registerTool(
+ *   'greet',
+ *   { description: 'Greet the user', inputSchema: { name: validators.nonEmptyString() } },
+ *   async ({ name }, extra) => {
+ *     const ctx = getModuleContext(extra);
+ *     return { content: [{ type: 'text', text: `Hello ${name}, from ${ctx.userId}` }] };
+ *   }
+ * );
+ *
+ * export default {
+ *   async fetch(request: Request): Promise<Response> {
+ *     const transport = new WebStandardStreamableHTTPServerTransport({ sessionIdGenerator: undefined });
+ *     await server.connect(transport);
+ *     return transport.handleRequest(request);
+ *   }
+ * };
  * ```
  */
 
-// Core module building
-export { createModule, ModuleBuilder } from './module-builder';
-
-// Type definitions
-export type { ModuleTool, ModuleContext, ToolContext } from './types';
-
-// Schema utilities
-export { SuccessResponseSchema } from './schemas';
-
-// Validators
-export { validators } from './validators';
-
-// Error handling
-export { ModuleError, ErrorCode } from './errors';
+export * from './odel/index.js';

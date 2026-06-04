@@ -1,0 +1,47 @@
+name: Release
+
+# Publishes @odel/module-sdk to npm when a v* tag is pushed.
+# Uses npm Trusted Publishing (OIDC) — no NPM_TOKEN secret required.
+# One-time setup: register this repo + workflow as a Trusted Publisher
+# on npmjs.com (package Settings -> Trusted Publishers -> GitHub Actions).
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write # mint the OIDC token npm exchanges for publish auth
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          registry-url: 'https://registry.npmjs.org'
+
+      # Lockfile is intentionally gitignored in this repo, so don't use --frozen-lockfile.
+      - name: Install
+        run: pnpm install
+
+      - name: Build & test
+        run: |
+          pnpm build
+          pnpm test
+
+      # OIDC Trusted Publishing needs npm >= 11.5.1; ensure we're current.
+      - name: Ensure recent npm
+        run: npm install -g npm@latest
+
+      # publishConfig in package.json sets access:public + provenance:true.
+      # No NODE_AUTH_TOKEN: npm performs the OIDC handshake automatically.
+      - name: Publish to npm
+        run: npm publish
