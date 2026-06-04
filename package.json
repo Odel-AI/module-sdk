@@ -47,12 +47,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/odel-ai/module-sdk.git"
+    "url": "git+https://github.com/Odel-AI/module-sdk.git"
   },
   "bugs": {
-    "url": "https://github.com/odel-ai/module-sdk/issues"
+    "url": "https://github.com/Odel-AI/module-sdk/issues"
   },
-  "homepage": "https://github.com/odel-ai/module-sdk#readme",
+  "homepage": "https://github.com/Odel-AI/module-sdk#readme",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.29.0"
   },
