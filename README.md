@@ -64,6 +64,7 @@ Odel's mcp-proxy authenticates the user, resolves their per-module secrets, and 
 
 - `app.odel/context` — identity (`userId`, `displayName`, `conversationId?`, `requestId`, `timestamp`)
 - `app.odel/secrets` — the per-user secret map for this module
+- `app.odel/configured` — on `tools/list`, the *names* of the secrets the caller has configured (never values)
 
 The official SDK surfaces `params._meta` to tool handlers as `extra._meta`, so you read all of this from the handler's `extra`:
 
@@ -92,6 +93,28 @@ export const configSchema = z.object({
 const cfg = parseConfig(configSchema, extra); // { RESEND_API_KEY: string; FROM_ADDRESS?: string }
 ```
 
+## Gating tools on secrets
+
+A tool that can't work without some secrets can say so, and Odel callers who haven't configured them won't see it:
+
+```typescript
+const server = createOdelServer({ name: 'openverse', version: '1.0.0', configSchema });
+
+server.registerTool('register-client', { description: 'Get an API client' }, registerHandler); // always listed
+server.registerTool(
+	'search',
+	{ description: 'Search', inputSchema: { q: z.string() }, requiresSecrets: ['CLIENT_ID', 'CLIENT_SECRET'] },
+	searchHandler
+);
+```
+
+- **`tools/list`:** when the envelope says which secrets the caller has, a tool missing any of its `requiresSecrets` is left out. Every gated tool also advertises its needs in its `_meta` under `app.odel/requiresSecrets`.
+- **`tools/call`:** a gated tool missing secrets is answered with an `isError` result whose text is `ModuleError(MISSING_SECRET).toJSON()`, naming them in `metadata.secretNames`. The handler doesn't run.
+- **No Odel envelope** (a catalog probe, an inspector, local `wrangler dev`): every tool is listed and runs, so the store page still shows what the module can do. Handlers should still check their secrets (`getRequiredSecret`, `parseConfig`).
+- **Stateless servers can't announce a changed tool list**, so clients see newly unlocked tools the next time they list tools, usually on reconnect.
+
+`getConfiguredSecretNames(extra)` gives the same answer to your own code: the configured names, or `null` without an envelope.
+
 ## The `odel://config` marker
 
 Every server made with `createOdelServer` exposes an MCP resource at **`odel://config`** — shape `{ secrets: [{ name, description, required }] }`, derived from your `configSchema` (or `{ secrets: [] }` when you declare none). It does double duty: it's the **marker that identifies an Odel module** to Odel tooling (the inspector tells Odel servers from plain MCP servers by its presence), and it lets clients **discover what config a module needs** to drive secret-entry UI. If you construct `McpServer` yourself, call `registerOdelConfig(server, configSchema?)` to expose it.
@@ -100,8 +123,8 @@ Every server made with `createOdelServer` exposes an MCP resource at **`odel://c
 
 | Import | Provides |
 | --- | --- |
-| `@odel/module-sdk/server` | `createOdelServer`, `McpServer`, `WebStandardStreamableHTTPServerTransport`, `CallToolResult`, `RequestHandlerExtra` |
-| `@odel/module-sdk` | `getModuleContext`, `getRequiredSecret`, `getOptionalSecret`, `createToolContext`, `parseConfig`, `configRequiredSecretNames`, `buildConfigManifest`, `registerOdelConfig`, `ODEL_CONFIG_URI`, `validators`, `ModuleError`, `ErrorCode`, `SuccessResponseSchema`, `SimpleSuccessSchema`, types |
+| `@odel/module-sdk/server` | `createOdelServer`, `OdelServer`, `REQUIRES_SECRETS_META_KEY`, `McpServer`, `WebStandardStreamableHTTPServerTransport`, `CallToolResult`, `RequestHandlerExtra` |
+| `@odel/module-sdk` | `getModuleContext`, `getRequiredSecret`, `getOptionalSecret`, `getConfiguredSecretNames`, `createToolContext`, `parseConfig`, `configRequiredSecretNames`, `buildConfigManifest`, `registerOdelConfig`, `ODEL_CONFIG_URI`, `validators`, `ModuleError`, `ErrorCode`, `SuccessResponseSchema`, `SimpleSuccessSchema`, types |
 | `@odel/module-sdk/odel` | same helper surface as the root (explicit subpath) |
 
 ## License
