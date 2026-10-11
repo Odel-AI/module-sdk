@@ -1,6 +1,6 @@
 {
   "name": "@odel/module-sdk",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "SDK for building Odel modules — a thin, additive wrapper over the Model Context Protocol TypeScript SDK for Cloudflare Workers",
   "type": "module",
   "exports": {

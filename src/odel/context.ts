@@ -9,6 +9,8 @@
  * Envelope:
  * - `_meta["app.odel/context"]` — identity (userId, displayName, …)
  * - `_meta["app.odel/secrets"]` — per-user secret map for this module
+ * - `_meta["app.odel/configured"]` — names (never values) of the secrets the caller has
+ *   configured; sent on `tools/list`, where the secret map is not
  */
 
 import { DEFAULT_MODULE_CONTEXT, type ModuleContext, type ToolContext } from './types.js';
@@ -18,6 +20,8 @@ import { ModuleError } from './errors.js';
 export const CONTEXT_META_KEY = 'app.odel/context';
 /** `_meta` key carrying the per-user secret map for this module. */
 export const SECRETS_META_KEY = 'app.odel/secrets';
+/** `_meta` key carrying the names of the secrets the caller has configured (no values). */
+export const CONFIGURED_META_KEY = 'app.odel/configured';
 
 /**
  * Minimal structural view of the official SDK's `RequestHandlerExtra`.
@@ -33,6 +37,7 @@ export interface HandlerExtraLike {
 interface OdelMeta {
 	'app.odel/context'?: Partial<ModuleContext>;
 	'app.odel/secrets'?: Record<string, string>;
+	'app.odel/configured'?: unknown;
 }
 
 function readMeta(extra: HandlerExtraLike | undefined): OdelMeta {
@@ -109,4 +114,21 @@ export function getRequiredSecret(extra: HandlerExtraLike, name: string): string
  */
 export function getOptionalSecret(extra: HandlerExtraLike, name: string): string | undefined {
 	return readMeta(extra)[SECRETS_META_KEY]?.[name];
+}
+
+/**
+ * The names of the secrets the caller has configured for this module, or `null` when the
+ * request carries no Odel envelope at all (a catalog probe, an inspector, local `wrangler dev`).
+ *
+ * Read from `app.odel/configured` when present (what Odel sends on `tools/list`), else from the
+ * non-empty keys of `app.odel/secrets` (on `tools/call`). An identity context with neither
+ * means an Odel caller with nothing configured: `[]`.
+ */
+export function getConfiguredSecretNames(extra: HandlerExtraLike | undefined): string[] | null {
+	const meta = readMeta(extra);
+	const configured = meta[CONFIGURED_META_KEY];
+	if (Array.isArray(configured)) return configured.filter((name): name is string => typeof name === 'string');
+	const secrets = meta[SECRETS_META_KEY];
+	if (secrets && typeof secrets === 'object') return Object.keys(secrets).filter(name => Boolean(secrets[name]));
+	return meta[CONTEXT_META_KEY] ? [] : null;
 }

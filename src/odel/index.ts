@@ -24,7 +24,9 @@ export type { ErrorResponse, SuccessResponse } from './schemas.js';
 export {
 	CONTEXT_META_KEY,
 	SECRETS_META_KEY,
+	CONFIGURED_META_KEY,
 	createToolContext,
+	getConfiguredSecretNames,
 	getModuleContext,
 	getOptionalSecret,
 	getRequiredSecret

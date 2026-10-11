@@ -6,6 +6,8 @@ import {
 	createToolContext,
 	CONTEXT_META_KEY,
 	SECRETS_META_KEY,
+	CONFIGURED_META_KEY,
+	getConfiguredSecretNames,
 	type HandlerExtraLike
 } from '../../src/odel/context.js';
 import { ModuleError, ErrorCode } from '../../src/odel/errors.js';
@@ -127,5 +129,24 @@ describe('envelope round-trip', () => {
 		expect(getRequiredSecret(extra, 'A')).toBe('1');
 		expect(getOptionalSecret(extra, 'B')).toBe('2');
 		expect(getOptionalSecret(extra, 'C')).toBeUndefined();
+	});
+});
+
+describe('getConfiguredSecretNames', () => {
+	test('null without any Odel envelope', () => {
+		expect(getConfiguredSecretNames({})).toBeNull();
+		expect(getConfiguredSecretNames(undefined)).toBeNull();
+	});
+
+	test('prefers app.odel/configured, keeping only strings', () => {
+		expect(getConfiguredSecretNames({ _meta: { [CONFIGURED_META_KEY]: ['A', 7, 'B'], [SECRETS_META_KEY]: { C: 'x' } } })).toEqual(['A', 'B']);
+	});
+
+	test('falls back to the non-empty keys of the secret map', () => {
+		expect(getConfiguredSecretNames({ _meta: { [SECRETS_META_KEY]: { A: 'x', B: '' } } })).toEqual(['A']);
+	});
+
+	test('an identity context alone means nothing configured', () => {
+		expect(getConfiguredSecretNames({ _meta: { [CONTEXT_META_KEY]: { userId: 'u' } } })).toEqual([]);
 	});
 });
